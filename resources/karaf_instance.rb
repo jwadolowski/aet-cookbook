@@ -44,32 +44,32 @@ action :install do
   # ---------------------------------------------------------------------------
   # Daemon user & group
   # ---------------------------------------------------------------------------
-  user daemon_user do
+  user new_resource.daemon_user do
     system true
     shell '/bin/bash' unless platform_family?('windows')
 
     action :create
   end
 
-  group daemon_group do
-    members [daemon_user]
+  group new_resource.daemon_group do
+    members [new_resource.daemon_user]
   end
 
   # ---------------------------------------------------------------------------
   # Karaf home and log directories
   # ---------------------------------------------------------------------------
-  directory target do
-    owner daemon_user
-    group daemon_group
+  directory new_resource.target do
+    owner new_resource.daemon_user
+    group new_resource.daemon_group
     mode '0755'
     recursive true
 
     action :create
   end
 
-  directory log_dir do
-    owner daemon_user
-    group daemon_group
+  directory new_resource.log_dir do
+    owner new_resource.daemon_user
+    group new_resource.daemon_group
     mode '0755'
     recursive true
 
@@ -86,7 +86,7 @@ action :install do
   end
 
   if platform_family?('windows')
-    windows_zipfile target do
+    windows_zipfile new_resource.target do
       source distribution_tmp_path
 
       action :unzip
