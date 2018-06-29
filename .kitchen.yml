@@ -27,6 +27,10 @@ platforms:
       name: winrm
       password: vagrant
       username: vagrant
+    attributes:
+      aet:
+        karaf:
+          source: 'https://archive.apache.org/dist/karaf/4.2.0/apache-karaf-4.2.0.zip'
 
 suites:
   - name: karaf
