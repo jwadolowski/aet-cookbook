@@ -30,7 +30,15 @@ platforms:
     attributes:
       aet:
         karaf:
+          user: 'karaf'
+          group: 'karaf-svc'
+          root_dir: 'C:/aet/karaf'
+          log_dir: 'C:/aet/karaf/log'
           source: 'https://archive.apache.org/dist/karaf/4.2.0/apache-karaf-4.2.0.zip'
+      java:
+        windows:
+          url: <%= ENV['JAVA_WINDOWS_URL'] %>
+          package_name: <%= ENV['JAVA_WINDOWS_PACKAGE_NAME'] %>
 
 suites:
   - name: karaf

@@ -6,15 +6,17 @@ description       'Installs/Configures aet'
 long_description  'Installs/Configures aet'
 version           '3.0.1-SNAPSHOT'
 
-depends           'apache2', '~> 3.2.2'
-depends           'java', '~> 1.13'
-depends           'mongodb3', '~> 5.2.0'
+depends           'java'
+depends           'windows'
 
-%w(
-  centos-6.8
-).each do |os|
-  supports os
-end
+# depends           'apache2', '~> 3.2.2'
+# depends           'mongodb3', '~> 5.2.0'
+
+# %w(
+#   centos-6.8
+# ).each do |os|
+#   supports os
+# end
 
 source_url        'https://github.com/Cognifide/aet-cookbook'
 issues_url        'https://github.com/Cognifide/aet-cookbook/issues'
