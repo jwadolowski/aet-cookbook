@@ -1,6 +1,6 @@
 resource_name :karaf_instance
 
-property :source_url, String
+property :source, String
 property :target, String
 
 default_action :install
@@ -12,8 +12,8 @@ def url_filename(url)
 end
 
 action :install do
-  remote_file "#{Chef::Config[:file_cache_path]}/#{url_filename(source_url)}" do
-    source source_url
+  remote_file "#{Chef::Config[:file_cache_path]}/#{url_filename(source)}" do
+    source new_resource.source
 
     action :create_if_missing
   end
