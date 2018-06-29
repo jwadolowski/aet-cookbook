@@ -10,31 +10,48 @@ driver:
 
 provisioner:
   name: chef_zero
+  product_name: chef
+  product_version: 13
 
 platforms:
-  - name: centos-6.8
+  - name: bento/centos-6
+    driver:
+      linked_clone: true
+  - name: bento/centos-7
+    driver:
+      linked_clone: true
+  - name: mwrock/Windows2012R2
+    driver:
+      linked_clone: true
+    transport:
+      name: winrm
+      password: vagrant
+      username: vagrant
 
 suites:
-  - name: default
-    run_list:
-      - recipe[aet::default]
-    attributes:
-      aet:
-        activemq:
-          jmx_ip: '192.168.123.111'
-  - name: develop
-    run_list:
-      - recipe[aet::_develop]
-      - recipe[aet::default]
-    attributes:
-      aet:
-        activemq:
-          jmx_ip: '192.168.123.111'
   - name: karaf
     run_list:
-      - recipe[aet::karaf]
-      - recipe[aet::postdeploy_restart]
-      - recipe[aet::deploy_aet_for_karaf]
-    verifier:
-      inspec_tests:
-        - test/karaf
+      - recipe[karaf::default]
+  # - name: default
+  #   run_list:
+  #     - recipe[aet::default]
+  #   attributes:
+  #     aet:
+  #       activemq:
+  #         jmx_ip: '192.168.123.111'
+  # - name: develop
+  #   run_list:
+  #     - recipe[aet::_develop]
+  #     - recipe[aet::default]
+  #   attributes:
+  #     aet:
+  #       activemq:
+  #         jmx_ip: '192.168.123.111'
+  # - name: karaf
+  #   run_list:
+  #     - recipe[aet::karaf]
+  #     - recipe[aet::postdeploy_restart]
+  #     - recipe[aet::deploy_aet_for_karaf]
+  #   verifier:
+  #     inspec_tests:
+  #       - test/integration/karaf
