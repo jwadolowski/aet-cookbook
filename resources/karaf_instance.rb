@@ -10,18 +10,25 @@ property :password, String, default: 'karaf'
 
 default_action :install
 
-def url_filename(url)
+def filename(url)
   require 'uri'
 
   ::File.basename(URI.parse(url).path)
 end
 
-def distribution_tmp_path
-  "#{Chef::Config[:file_cache_path]}/#{url_filename(source)}"
+def filename_basename(filename)
+  filename[/(.+)\.(tar\.gz|zip)$/, 1]
 end
 
-def identical_user_and_group?(resource)
-  resource.daemon_user == resource.daemon_group
+def home_dir
+  ::File.join(
+    target,
+    filename_basename(filename(source))
+  )
+end
+
+def distribution_tmp_path
+  "#{Chef::Config[:file_cache_path]}/#{filename(source)}"
 end
 
 def validate_properties(resource)
@@ -31,11 +38,6 @@ def validate_properties(resource)
       "#{property} property can't be empty!"
     ) if resource.send(property.to_sym).empty?
   end
-
-  # Windows specific constraints
-  Chef::Application.fatal!(
-    "Windows doesn't allow users and groups with the same name!"
-  ) if platform_family?('windows') && identical_user_and_group?(resource)
 end
 
 action :install do
@@ -43,34 +45,43 @@ action :install do
 
   # ---------------------------------------------------------------------------
   # Daemon user & group
+  #
+  # There's no point to create dedicated service user/group on Windows
   # ---------------------------------------------------------------------------
-  user new_resource.daemon_user do
-    system true
-    shell '/bin/bash' unless platform_family?('windows')
+  if platform_family?('rhel')
+    group new_resource.daemon_group do
+      action :create
+    end
 
-    action :create
-  end
+    user new_resource.daemon_user do
+      system true
+      group new_resource.daemon_group
+      shell '/bin/bash'
 
-  group new_resource.daemon_group do
-    members [new_resource.daemon_user]
+      action :create
+    end
   end
 
   # ---------------------------------------------------------------------------
   # Karaf home and log directories
   # ---------------------------------------------------------------------------
   directory new_resource.target do
-    owner new_resource.daemon_user
-    group new_resource.daemon_group
-    mode '0755'
+    if node['platform_family'] == 'rhel'
+      owner new_resource.daemon_user
+      group new_resource.daemon_group
+      mode '0755'
+    end
     recursive true
 
     action :create
   end
 
   directory new_resource.log_dir do
-    owner new_resource.daemon_user
-    group new_resource.daemon_group
-    mode '0755'
+    if node['platform_family'] == 'rhel'
+      owner new_resource.daemon_user
+      group new_resource.daemon_group
+      mode '0755'
+    end
     recursive true
 
     action :create
@@ -90,6 +101,8 @@ action :install do
       source distribution_tmp_path
 
       action :unzip
+
+      not_if { ::File.exist?(::File.join(home_dir, 'bin', 'karaf')) }
     end
   else
     # TODO: add unzip for linux
