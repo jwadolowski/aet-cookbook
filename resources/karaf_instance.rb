@@ -194,7 +194,6 @@ action :install do
   # ---------------------------------------------------------------------------
   # Log directories
   # ---------------------------------------------------------------------------
-
   # Create data folder if it doesn't exists so that we can create link for logs
   directory ::File.join(home_dir_symlink, 'data') do
     if node['platform_family'] == 'rhel'
@@ -220,5 +219,48 @@ action :install do
   # ---------------------------------------------------------------------------
   # Service
   # ---------------------------------------------------------------------------
-  # TODO: service (Linux/systemd + Windows)
+  case node['platform_family']
+  when 'windows'
+    # TODO: windows
+  when 'rhel'
+    case node['platform_version'].to_i
+    when 6
+      # TODO: init.d
+    when 7
+      template '/etc/systemd/system/karaf.service' do
+        owner 'root'
+        group 'root'
+        mode '0755'
+        source 'etc/systemd/system/karaf.service.erb'
+        cookbook node['aet']['karaf']['src_cookbook']['systemd_script']
+        variables(
+          home_dir: home_dir_symlink,
+          user: new_resource.daemon_user,
+          group: new_resource.daemon_group
+        )
+
+        notifies :run, 'execute[systemd-verify-karaf]', :immediately
+        notifies :run, 'execute[systemd-reload]', :immediately
+        notifies :restart, 'service[karaf]', :delayed
+      end
+
+      execute 'systemd-verify-karaf' do
+        command 'systemd-analyze verify karaf.service'
+
+        action :nothing
+      end
+
+      execute 'systemd-reload' do
+        command 'systemctl daemon-reload'
+
+        action :nothing
+      end
+    end
+  end
+
+  service 'karaf' do
+    supports status: true, restart: true
+
+    action [:start, :enable]
+  end
 end
