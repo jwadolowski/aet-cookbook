@@ -17,6 +17,8 @@ karaf_instance 'main' do
   jvm_max_heap node['aet']['karaf']['java_max_mem']
   jvm_perm_mem node['aet']['karaf']['java_min_perm_mem']
   jvm_max_perm_mem node['aet']['karaf']['java_max_perm_mem']
+  web_port node['aet']['karaf']['web_port']
+  ssh_port node['aet']['karaf']['ssh_port']
 
   action :install
 end

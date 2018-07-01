@@ -11,6 +11,8 @@ property :jvm_min_heap, String, default: '512M'
 property :jvm_max_heap, String, default: '1024M'
 property :jvm_perm_mem, String, default: '64M'
 property :jvm_max_perm_mem, String, default: '128M'
+property :web_port, String, default: '8181'
+property :ssh_port, String, default: '8101'
 
 default_action :install
 
@@ -142,4 +144,54 @@ action :install do
 
     # TODO: schedule delayed service restart
   end
+
+  template ::File.join(home_dir_symlink, 'etc', 'users.properties') do
+    if node['platform_family'] == 'rhel'
+      owner new_resource.daemon_user
+      group new_resource.daemon_group
+      mode '0644'
+    end
+    source 'content/karaf/current/etc/users.properties.erb'
+    cookbook node['aet']['karaf']['src_cookbook']['users_prop']
+    variables(
+      login: new_resource.login,
+      password: new_resource.password
+    )
+
+    # TODO: schedule delayed service restart
+  end
+
+  template ::File.join(home_dir_symlink, 'etc', 'org.ops4j.pax.web.cfg') do
+    if node['platform_family'] == 'rhel'
+      owner new_resource.daemon_user
+      group new_resource.daemon_group
+      mode '0644'
+    end
+    source 'content/karaf/current/etc/org.ops4j.pax.web.cfg.erb'
+    cookbook node['aet']['karaf']['src_cookbook']['ops4j_cfg']
+    variables(
+      port: new_resource.web_port
+    )
+
+    # TODO: schedule delayed service restart
+  end
+
+  template ::File.join(home_dir_symlink, 'etc', 'org.apache.karaf.shell.cfg') do
+    if node['platform_family'] == 'rhel'
+      owner new_resource.daemon_user
+      group new_resource.daemon_group
+      mode '0644'
+    end
+    source 'content/karaf/current/etc/org.apache.karaf.shell.cfg.erb'
+    cookbook node['aet']['karaf']['src_cookbook']['shell_cfg']
+    variables(
+      port: new_resource.ssh_port
+    )
+
+    # TODO: schedule delayed service restart
+  end
+
+  # TODO: remove old log dir + symlink
+  # TODO: create data folder
+  # TODO: service (Linux/systemd + Windows)
 end
