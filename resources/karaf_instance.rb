@@ -191,7 +191,34 @@ action :install do
     # TODO: schedule delayed service restart
   end
 
-  # TODO: remove old log dir + symlink
-  # TODO: create data folder
+  # ---------------------------------------------------------------------------
+  # Log directories
+  # ---------------------------------------------------------------------------
+
+  # Create data folder if it doesn't exists so that we can create link for logs
+  directory ::File.join(home_dir_symlink, 'data') do
+    if node['platform_family'] == 'rhel'
+      owner new_resource.daemon_user
+      group new_resource.daemon_group
+      mode '0755'
+    end
+    recursive true
+
+    action :create
+  end
+
+  directory ::File.join(home_dir_symlink, 'data', 'log') do
+    action :delete
+
+    not_if { ::File.symlink?(::File.join(home_dir_symlink, 'data', 'log')) }
+  end
+
+  link ::File.join(home_dir_symlink, 'data', 'log') do
+    to new_resource.log_dir
+  end
+
+  # ---------------------------------------------------------------------------
+  # Service
+  # ---------------------------------------------------------------------------
   # TODO: service (Linux/systemd + Windows)
 end
