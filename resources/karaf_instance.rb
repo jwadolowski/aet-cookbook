@@ -7,6 +7,10 @@ property :daemon_user, String, default: 'karaf'
 property :daemon_group, String, default: 'karaf'
 property :login, String, default: 'karaf'
 property :password, String, default: 'karaf'
+property :jvm_min_heap, String, default: '512M'
+property :jvm_max_heap, String, default: '1024M'
+property :jvm_perm_mem, String, default: '64M'
+property :jvm_max_perm_mem, String, default: '128M'
 
 default_action :install
 
@@ -25,6 +29,10 @@ def home_dir
     target,
     filename_basename(filename(source))
   )
+end
+
+def home_dir_symlink
+  ::File.join(target, 'current')
 end
 
 def distribution_tmp_path
@@ -87,6 +95,12 @@ action :install do
     action :create
   end
 
+  link home_dir_symlink do
+    to home_dir
+
+    # TODO: does it suppose to restart Apache Karaf?
+  end
+
   # ---------------------------------------------------------------------------
   # Download and unpack Apache Karaf distribution
   # ---------------------------------------------------------------------------
@@ -106,5 +120,26 @@ action :install do
     end
   else
     # TODO: add unzip for linux
+  end
+
+  # ---------------------------------------------------------------------------
+  # Configuration files
+  # ---------------------------------------------------------------------------
+  template ::File.join(home_dir_symlink, 'bin', 'setenv') do
+    if node['platform_family'] == 'rhel'
+      owner new_resource.daemon_user
+      group new_resource.daemon_group
+      mode '0644'
+    end
+    source 'content/karaf/current/bin/setenv.erb'
+    cookbook node['aet']['karaf']['src_cookbook']['setenv']
+    variables(
+      min_heap: new_resource.jvm_min_heap,
+      max_heap: new_resource.jvm_max_heap,
+      perm_mem: new_resource.jvm_perm_mem,
+      max_perm_mem: new_resource.jvm_max_perm_mem
+    )
+
+    # TODO: schedule delayed service restart
   end
 end

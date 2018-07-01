@@ -13,6 +13,10 @@ karaf_instance 'main' do
   daemon_group node['aet']['karaf']['group']
   login node['aet']['karaf']['login']
   password node['aet']['karaf']['password']
+  jvm_min_heap node['aet']['karaf']['java_min_mem']
+  jvm_max_heap node['aet']['karaf']['java_max_mem']
+  jvm_perm_mem node['aet']['karaf']['java_min_perm_mem']
+  jvm_max_perm_mem node['aet']['karaf']['java_max_perm_mem']
 
   action :install
 end

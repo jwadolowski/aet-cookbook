@@ -1,5 +1,4 @@
-
-export JAVA_MIN_MEM=<%= node['aet']['karaf']['java_min_mem'] %>
-export JAVA_MAX_MEM=<%= node['aet']['karaf']['java_max_mem'] %>
-export JAVA_PERM_MEM=<%= node['aet']['karaf']['java_min_perm_mem'] %>
-export JAVA_MAX_PERM_MEM=<%= node['aet']['karaf']['java_max_perm_mem'] %>
+export JAVA_MIN_MEM=<%= @min_heap %>
+export JAVA_MAX_MEM=<%= @max_heap %>
+export JAVA_PERM_MEM=<%= @perm_mem %>
+export JAVA_MAX_PERM_MEM=<%= @max_perm_mem %>
